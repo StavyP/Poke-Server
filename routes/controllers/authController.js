@@ -23,12 +23,8 @@ exports.Connection = async (req, res) => {
 				const user = result[0];
 				const userId = user.IdUtilisateur;
 
-				// Vérifiez si l'e-mail de l'utilisateur est confirmé
-				if (!user.email_confirmed) {
-					return res
-						.status(400)
-						.send(JSON.stringify("Veuillez confirmer votre adresse e-mail"));
-				}
+				// Confirmation d'email désactivée temporairement (l'envoi via Gmail depuis
+				// Render ne fonctionne pas) — à réactiver une fois un vrai service d'email en place.
 
 				// Bcrypt vas crypté le mdp que l'utilisateur entre dans la partie front, pour le comparé à celui en base de données et créer le token si la comparaison est bonne
 				if (bcrypt.compareSync(password, user.motDePasse)) {
