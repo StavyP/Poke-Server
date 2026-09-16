@@ -12,9 +12,10 @@ exports.AjoutCollection = (req, res) => {
 			methode,
 			IdUtilisateur,
 			nomPokemon,
+			estShiny,
 		} = req.body;
 		const sqlInsert =
-			"INSERT INTO collectionutilisateur (idUtilisateurCollect, surnom, nombreDeRencontre, methode, IdUtilisateur, jeu, idPokedex) SELECT ?, ?, ?, ?, ?, ?, p.idPokedex FROM pokedex p WHERE p.nomPokemon = ?";
+			"INSERT INTO collectionutilisateur (idUtilisateurCollect, surnom, nombreDeRencontre, methode, IdUtilisateur, jeu, idPokedex, estShiny) SELECT ?, ?, ?, ?, ?, ?, p.idPokedex, ? FROM pokedex p WHERE p.nomPokemon = ?";
 
 		connection.query(
 			sqlInsert,
@@ -25,10 +26,14 @@ exports.AjoutCollection = (req, res) => {
 				methode,
 				IdUtilisateur,
 				jeu,
+				estShiny ? 1 : 0,
 				nomPokemon,
 			],
 			(error, result) => {
-				if (error) throw error;
+				if (error) {
+					console.error("Erreur lors de l'ajout du pokemon :", error);
+					return res.status(500).json({ error: "Erreur lors de l'ajout du pokemon" });
+				}
 				console.log(result);
 				if (result.insertId === 0) {
 					return res
