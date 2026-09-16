@@ -9,4 +9,6 @@ router.get(
 	collectionController.RecupCollection
 );
 
+router.get("/recentShinies", collectionController.RecentShinies);
+
 module.exports = router;

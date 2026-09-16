@@ -88,3 +88,29 @@ exports.RecupCollection = (req, res) => {
 		res.status(200).json(results);
 	});
 };
+
+// Fil des derniers shiny attrapés, tous utilisateurs confondus (widget "Derniers shiny" de l'accueil).
+exports.RecentShinies = (req, res) => {
+	const limit = Math.min(parseInt(req.query.limit, 10) || 12, 30);
+
+	const sql = `
+		SELECT collectionutilisateur.idUtilisateurCollect, collectionutilisateur.surnom,
+			collectionutilisateur.dateAjout, pokedex.numeroDex, pokedex.nomPokemon, utilisateur.pseudo
+		FROM collectionutilisateur
+		JOIN pokedex ON collectionutilisateur.idPokedex = pokedex.idPokedex
+		JOIN utilisateur ON collectionutilisateur.IdUtilisateur = utilisateur.IdUtilisateur
+		WHERE collectionutilisateur.estShiny = 1 AND collectionutilisateur.dateAjout IS NOT NULL
+		ORDER BY collectionutilisateur.dateAjout DESC
+		LIMIT ?
+	`;
+
+	connection.query(sql, [limit], (err, results) => {
+		if (err) {
+			console.error("Erreur lors de la récupération des derniers shiny :", err);
+			return res.status(500).json({
+				error: "Erreur lors de la récupération des derniers shiny",
+			});
+		}
+		res.status(200).json(results);
+	});
+};
