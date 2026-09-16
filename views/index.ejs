@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Reset Password</title>
+		<script>
+			var statusF = "<%- JSON.stringify(status) %>";
+			var sameF = "<%- JSON.stringify(same) %>";
+			console.log(statusF);
+			console.log(sameF);
+			if (statusF === "true" && sameF === "false") {
+				if (confirm("Voulez-vous continuer ?")) {
+					window.location.href = "http://localhost:3000/";
+				}
+			}
+			if (sameF === "true") {
+				alert("Le mot de passe doit être différent que l'ancien");
+			}
+		</script>
+	</head>
+	<body>
+		<h1><%- email%></h1>
+		<form id="form" action="" method="POST">
+			<input
+				type="password"
+				name="password"
+				id="password"
+				placeholder="password"
+			/>
+			<br />
+			<input
+				type="password"
+				name="confirmPassword"
+				id="confirmPassword"
+				placeholder="confirm password"
+			/>
+			<br />
+			<button type="submit">Submit</button>
+		</form>
+		<script>
+			const form = document.querySelector("form");
+			const passwordField = document.querySelector("#password");
+			const confirmPasswordField = document.querySelector("#confirmPassword");
+
+			console.log(form);
+			console.log(passwordField);
+			console.log(confirmPasswordField);
+
+			form.addEventListener("submit", (event) => {
+				if (passwordField.value !== confirmPasswordField.value) {
+					event.preventDefault(); // Prevent the form from submitting
+					alert("Les mots de passe ne correspondent pas"); // Show an error message to the user
+				}
+			});
+		</script>
+	</body>
+</html>

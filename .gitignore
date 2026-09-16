@@ -1,0 +1,8 @@
+node_modules/
+.env
+.env.local
+keys/jwtRS256.key
+keys/jwtRS256.key.pub
+uploads/images/*
+!uploads/images/.gitkeep
+npm-debug.log*
