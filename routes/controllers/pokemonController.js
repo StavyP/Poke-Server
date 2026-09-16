@@ -75,7 +75,7 @@ exports.EvolutionPokemon = (req, res) => {
 			});
 		}
 		const familys = result.map((row) => row.family);
-		const sql_evol = `SELECT p.idPokedex, p.numeroDex, p.imagePokemon, p.nomPokemon, evolution.family, evolution.evolutionNumber, evolution.evolutionCondition
+		const sql_evol = `SELECT p.idPokedex, p.numeroDex, p.nomPokemon, evolution.family, evolution.evolutionNumber, evolution.evolutionCondition
 			FROM pokedex p
 			INNER JOIN evolution ON p.nomPokemon = evolution.evolutionName
 			WHERE evolution.family IN (?)`;
