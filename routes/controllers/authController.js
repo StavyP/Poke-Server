@@ -14,10 +14,10 @@ const cookieOptions = {
 };
 
 exports.Connection = async (req, res) => {
-	const email = req.body.email;
+	const pseudo = req.body.pseudo;
 	const password = req.body.password;
-	const sqlVerify = `SELECT * FROM utilisateur WHERE email = ?`;
-	connection.query(sqlVerify, [email], (err, result) => {
+	const sqlVerify = `SELECT * FROM utilisateur WHERE pseudo = ?`;
+	connection.query(sqlVerify, [pseudo], (err, result) => {
 		try {
 			if (result.length > 0) {
 				const user = result[0];
@@ -38,18 +38,18 @@ exports.Connection = async (req, res) => {
 				} else {
 					res
 						.status(400)
-						.send(JSON.stringify("Email et/ou mot de passe incorrect"));
+						.send(JSON.stringify("Pseudo et/ou mot de passe incorrect"));
 				}
 			} else {
 				res
 					.status(400)
-					.send(JSON.stringify("Email et/ou mot de passe incorrect"));
+					.send(JSON.stringify("Pseudo et/ou mot de passe incorrect"));
 			}
 		} catch (error) {
 			console.log(error);
 			res
 				.status(400)
-				.send(JSON.stringify("Email et/ou mot de passe incorrect"));
+				.send(JSON.stringify("Pseudo et/ou mot de passe incorrect"));
 		}
 	});
 };
