@@ -30,12 +30,13 @@ exports.AjoutCollection = (req, res) => {
 			nomPokemon,
 			estShiny,
 			dateAjout,
+			dateAjoutPrecision,
 		} = req.body;
 		// COALESCE(?, CURRENT_TIMESTAMP) : si dateAjout n'est pas fourni (Living Dex, ou capture
 		// shiny sans date précisée), la colonne retombe sur sa valeur par défaut au lieu d'un
 		// NULL explicite (qui, lui, n'aurait pas déclenché le DEFAULT de la colonne).
 		const sqlInsert =
-			"INSERT INTO collectionutilisateur (idUtilisateurCollect, surnom, nombreDeRencontre, methode, IdUtilisateur, jeu, idPokedex, estShiny, dateAjout) SELECT ?, ?, ?, ?, ?, ?, p.idPokedex, ?, COALESCE(?, CURRENT_TIMESTAMP) FROM pokedex p WHERE p.nomPokemon = ?";
+			"INSERT INTO collectionutilisateur (idUtilisateurCollect, surnom, nombreDeRencontre, methode, IdUtilisateur, jeu, idPokedex, estShiny, dateAjout, dateAjoutPrecision) SELECT ?, ?, ?, ?, ?, ?, p.idPokedex, ?, COALESCE(?, CURRENT_TIMESTAMP), ? FROM pokedex p WHERE p.nomPokemon = ?";
 
 		connection.query(
 			sqlInsert,
@@ -48,6 +49,7 @@ exports.AjoutCollection = (req, res) => {
 				jeu,
 				estShiny ? 1 : 0,
 				dateAjout || null,
+				dateAjoutPrecision || "jour",
 				nomPokemon,
 			],
 			(error, result) => {
@@ -119,12 +121,12 @@ exports.ModifierCollection = (req, res) => {
 		return res.status(401).json({ error: "Non authentifié" });
 	}
 
-	const { surnom, dateAjout } = req.body;
-	const sql = `UPDATE collectionutilisateur SET surnom = ?, dateAjout = ? WHERE idUtilisateurCollect = ? AND IdUtilisateur = ?`;
+	const { surnom, dateAjout, dateAjoutPrecision } = req.body;
+	const sql = `UPDATE collectionutilisateur SET surnom = ?, dateAjout = ?, dateAjoutPrecision = ? WHERE idUtilisateurCollect = ? AND IdUtilisateur = ?`;
 
 	connection.query(
 		sql,
-		[surnom || null, dateAjout || null, idUtilisateurCollect, userId],
+		[surnom || null, dateAjout || null, dateAjoutPrecision || "jour", idUtilisateurCollect, userId],
 		(error, result) => {
 			if (error) {
 				console.error("Erreur lors de la modification de la capture :", error);
@@ -166,7 +168,8 @@ exports.RecentShinies = (req, res) => {
 
 	const sql = `
 		SELECT collectionutilisateur.idUtilisateurCollect, collectionutilisateur.surnom,
-			collectionutilisateur.dateAjout, pokedex.numeroDex, pokedex.nomPokemon, utilisateur.pseudo
+			collectionutilisateur.dateAjout, collectionutilisateur.dateAjoutPrecision,
+			pokedex.numeroDex, pokedex.nomPokemon, utilisateur.pseudo
 		FROM collectionutilisateur
 		JOIN pokedex ON collectionutilisateur.idPokedex = pokedex.idPokedex
 		JOIN utilisateur ON collectionutilisateur.IdUtilisateur = utilisateur.IdUtilisateur
