@@ -17,7 +17,6 @@ function getUserIdFromToken(req) {
 }
 
 exports.AjoutCollection = (req, res) => {
-	console.log(req.body);
 	try {
 		// Récupérez les données envoyées depuis le front-end
 		const {
@@ -57,13 +56,11 @@ exports.AjoutCollection = (req, res) => {
 					console.error("Erreur lors de l'ajout du pokemon :", error);
 					return res.status(500).json({ error: "Erreur lors de l'ajout du pokemon" });
 				}
-				console.log(result);
 				if (result.insertId === 0) {
 					return res
 						.status(400)
 						.json({ error: "Unknow pokemon : " + nomPokemon });
 				} else {
-					console.log("Pokémon ajouté avec succès !");
 					return res
 						.status(201)
 						.json({ message: "Pokémon ajouté avec succès !" });

@@ -3,7 +3,7 @@ const cron = require("node-cron");
 
 let randomPokemon = Math.floor(Math.random() * 1009) + 1;
 
-// Exécute la mise à jour du Pokémon aléatoire toutes les 5 secondes
+// Exécute la mise à jour du Pokémon aléatoire une fois par jour à minuit
 cron.schedule("0 0 * * *", () => {
 	const newRandomPokemon = Math.floor(Math.random() * 1009) + 1;
 	randomPokemon = newRandomPokemon;

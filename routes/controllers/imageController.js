@@ -54,9 +54,6 @@ exports.UploadImage = (req, res) => {
 					.send("Erreur lors de la mise à jour de l'image de profil");
 			}
 
-			console.log("Image de profil mise à jour avec succès");
-
-			// Envoyez une réponse au client
 			res.json({
 				message: "Image de profil mise à jour avec succès",
 			});

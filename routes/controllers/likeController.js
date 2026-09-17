@@ -1,7 +1,6 @@
 const connection = require("../../database/index");
 
 exports.Like = async (req, res) => {
-	console.log(req.body);
 	const { pokemonId, userId } = req.body;
 
 	// Vérifier si l'utilisateur a déjà liké ce Pokémon

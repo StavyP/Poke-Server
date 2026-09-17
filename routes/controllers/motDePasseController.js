@@ -99,8 +99,6 @@ exports.test2 = async (req, res) => {
 				const passwordCrypt = await bcrypt.hash(password, 8);
 				const verify = verifyToken(token);
 
-                console.log(result[0].motDePasse);
-
 				if (verify) {
 					const same = bcrypt.compareSync(password, result[0].motDePasse);
 					if (same) {
