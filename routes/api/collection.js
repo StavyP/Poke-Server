@@ -11,4 +11,14 @@ router.get(
 
 router.get("/recentShinies", collectionController.RecentShinies);
 
+router.put(
+	"/collectionutilisateur/:idUtilisateurCollect",
+	collectionController.ModifierCollection
+);
+
+router.delete(
+	"/collectionutilisateur/:idUtilisateurCollect",
+	collectionController.SupprimerCollection
+);
+
 module.exports = router;

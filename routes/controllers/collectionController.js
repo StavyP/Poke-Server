@@ -1,4 +1,20 @@
 const connection = require("../../database/index");
+const jsonwebtoken = require("jsonwebtoken");
+const { keyPub } = require("../../keys");
+
+// Modifier/supprimer une entrée exige de savoir QUI fait la demande sans se fier à ce que le
+// front envoie (contrairement à AjoutCollection qui fait encore confiance à IdUtilisateur dans
+// le body) — on décode le cookie signé plutôt qu'un champ modifiable par n'importe qui.
+function getUserIdFromToken(req) {
+	const { token } = req.cookies;
+	if (!token) return null;
+	try {
+		const decoded = jsonwebtoken.verify(token, keyPub, { algorithms: "RS256" });
+		return Number(decoded.sub);
+	} catch (error) {
+		return null;
+	}
+}
 
 exports.AjoutCollection = (req, res) => {
 	console.log(req.body);
@@ -86,6 +102,56 @@ exports.RecupCollection = (req, res) => {
 		}
 
 		res.status(200).json(results);
+	});
+};
+
+// Modifie le surnom et/ou la date de capture d'une entrée — réservé à son propriétaire
+// (vérifié via le cookie, pas via un champ du body).
+exports.ModifierCollection = (req, res) => {
+	const idUtilisateurCollect = req.params.idUtilisateurCollect;
+	const userId = getUserIdFromToken(req);
+	if (!userId) {
+		return res.status(401).json({ error: "Non authentifié" });
+	}
+
+	const { surnom, dateAjout } = req.body;
+	const sql = `UPDATE collectionutilisateur SET surnom = ?, dateAjout = ? WHERE idUtilisateurCollect = ? AND IdUtilisateur = ?`;
+
+	connection.query(
+		sql,
+		[surnom || null, dateAjout || null, idUtilisateurCollect, userId],
+		(error, result) => {
+			if (error) {
+				console.error("Erreur lors de la modification de la capture :", error);
+				return res.status(500).json({ error: "Erreur lors de la modification" });
+			}
+			if (result.affectedRows === 0) {
+				return res.status(403).json({ error: "Introuvable ou non autorisé" });
+			}
+			res.status(200).json({ message: "Capture modifiée" });
+		}
+	);
+};
+
+// Supprime une entrée de la collection — réservé à son propriétaire.
+exports.SupprimerCollection = (req, res) => {
+	const idUtilisateurCollect = req.params.idUtilisateurCollect;
+	const userId = getUserIdFromToken(req);
+	if (!userId) {
+		return res.status(401).json({ error: "Non authentifié" });
+	}
+
+	const sql = `DELETE FROM collectionutilisateur WHERE idUtilisateurCollect = ? AND IdUtilisateur = ?`;
+
+	connection.query(sql, [idUtilisateurCollect, userId], (error, result) => {
+		if (error) {
+			console.error("Erreur lors de la suppression de la capture :", error);
+			return res.status(500).json({ error: "Erreur lors de la suppression" });
+		}
+		if (result.affectedRows === 0) {
+			return res.status(403).json({ error: "Introuvable ou non autorisé" });
+		}
+		res.status(200).json({ message: "Capture supprimée" });
 	});
 };
 
