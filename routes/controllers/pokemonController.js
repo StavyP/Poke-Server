@@ -1,13 +1,4 @@
 const connection = require("../../database/index");
-const cron = require("node-cron");
-
-let randomPokemon = Math.floor(Math.random() * 1009) + 1;
-
-// Exécute la mise à jour du Pokémon aléatoire une fois par jour à minuit
-cron.schedule("0 0 * * *", () => {
-	const newRandomPokemon = Math.floor(Math.random() * 1009) + 1;
-	randomPokemon = newRandomPokemon;
-});
 
 exports.RecupPokemon = (req, res) => {
 	// Renvoie aussi les formes régionales (forme != 0) — filtrées côté front via le sélecteur
@@ -88,25 +79,6 @@ exports.EvolutionPokemon = (req, res) => {
 			}
 			res.send(JSON.stringify(result));
 		});
-	});
-};
-
-exports.PokemonJour = (req, res) => {
-	const value = [randomPokemon, 0];
-	const sql = `SELECT * FROM pokedex WHERE numeroDex= ? AND forme = ?`;
-	connection.query(sql, value, (err, result) => {
-		if (err) {
-			console.error(
-				"Erreur lors de la récupération du Pokémon aléatoire :",
-				err
-			);
-			res.status(500).json({
-				error:
-					"Une erreur s'est produite lors de la récupération du Pokémon aléatoire",
-			});
-		} else {
-			res.json(result[0]); // Utilisez res.json() pour renvoyer des données JSON
-		}
 	});
 };
 

@@ -17,8 +17,6 @@ router.get(
 	pokemonController.EvolutionPokemon
 );
 
-router.get("/getPokemonAccueil", pokemonController.PokemonJour);
-
 router.get("/getPokemonNav", pokemonController.PokemonNav);
 
 module.exports = router;
