@@ -215,6 +215,29 @@ exports.NouvellePhase = (req, res) => {
 	});
 };
 
+// Bascule une shasse entre "active" et "inactive" (pause) — n'a aucun effet sur une shasse déjà
+// "trouve" (on ne "dé-capture" pas via cette route). Réservé au propriétaire.
+exports.ToggleActif = (req, res) => {
+	const idShasse = req.params.idShasse;
+	const userId = getUserIdFromToken(req);
+	if (!userId) {
+		return res.status(401).json({ error: "Non authentifié" });
+	}
+
+	const nouveauStatut = req.body.actif ? "active" : "inactive";
+	const sql = `UPDATE shasse SET statut = ? WHERE idShasse = ? AND IdUtilisateur = ? AND statut IN ('active', 'inactive')`;
+	connection.query(sql, [nouveauStatut, idShasse, userId], (error, result) => {
+		if (error) {
+			console.error("Erreur lors du changement de statut :", error);
+			return res.status(500).json({ error: "Erreur lors du changement de statut" });
+		}
+		if (result.affectedRows === 0) {
+			return res.status(403).json({ error: "Introuvable, non autorisé, ou déjà trouvée" });
+		}
+		res.status(200).json({ message: "Statut mis à jour" });
+	});
+};
+
 // Valide la capture du shiny : passe la shasse à "trouve", l'ajoute au journal de collection
 // (comme "Ajouter un shiny" le ferait manuellement — la capture chassée doit apparaître dans le
 // Shiny Dex sans ressaisie) et envoie l'alerte Discord si un webhook est configuré — réservé au
