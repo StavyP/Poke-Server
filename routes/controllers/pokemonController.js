@@ -10,8 +10,10 @@ cron.schedule("0 0 * * *", () => {
 });
 
 exports.RecupPokemon = (req, res) => {
-	const sql = "SELECT * FROM pokedex WHERE forme = ?";
-	connection.query(sql, [0], (err, result) => {
+	// Renvoie aussi les formes régionales (forme != 0) — filtrées côté front via le sélecteur
+	// "Formes régionales" plutôt que jamais renvoyées.
+	const sql = "SELECT * FROM pokedex";
+	connection.query(sql, (err, result) => {
 		if (err) {
 			console.error("Erreur lors de la récupération des Pokémon :", err);
 			return res.status(500).json({ error: "Erreur lors de la récupération des Pokémon" });
