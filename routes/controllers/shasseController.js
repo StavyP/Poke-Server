@@ -111,6 +111,7 @@ exports.ModifierShasse = (req, res) => {
 		webhookUrl,
 		webhookMessage,
 		spriteStyle,
+		spriteUrl,
 		couleurTheme,
 		pasIncrement,
 		raccourciClavier,
@@ -123,7 +124,7 @@ exports.ModifierShasse = (req, res) => {
 	const sql = `
 		UPDATE shasse SET
 			idPokedex = ?, methode = ?, jeu = ?, lieu = ?, charmeChroma = ?, secrete = ?,
-			webhookUrl = ?, webhookMessage = ?, spriteStyle = ?, couleurTheme = ?,
+			webhookUrl = ?, webhookMessage = ?, spriteStyle = ?, spriteUrl = ?, couleurTheme = ?,
 			pasIncrement = ?, raccourciClavier = ?, autoCompteActif = ?, autoCompteIntervalle = ?,
 			afficherTempsPasse = ?, haloActif = ?, configuree = 1
 		WHERE idShasse = ? AND IdUtilisateur = ?
@@ -141,6 +142,7 @@ exports.ModifierShasse = (req, res) => {
 			webhookUrl || null,
 			webhookMessage || null,
 			spriteStyle || "artwork",
+			spriteUrl || null,
 			couleurTheme || null,
 			pasIncrement || 1,
 			raccourciClavier || null,
