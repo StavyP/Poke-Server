@@ -215,8 +215,10 @@ exports.NouvellePhase = (req, res) => {
 	});
 };
 
-// Valide la capture du shiny : passe la shasse à "trouve" et envoie l'alerte Discord si un
-// webhook est configuré — réservé au propriétaire.
+// Valide la capture du shiny : passe la shasse à "trouve", l'ajoute au journal de collection
+// (comme "Ajouter un shiny" le ferait manuellement — la capture chassée doit apparaître dans le
+// Shiny Dex sans ressaisie) et envoie l'alerte Discord si un webhook est configuré — réservé au
+// propriétaire.
 exports.ValiderCapture = (req, res) => {
 	const idShasse = req.params.idShasse;
 	const userId = getUserIdFromToken(req);
@@ -233,26 +235,48 @@ exports.ValiderCapture = (req, res) => {
 		if (!row || row.ownerId !== userId) {
 			return res.status(403).json({ error: "Introuvable ou non autorisé" });
 		}
+		if (row.statut !== "active") {
+			return res.status(409).json({ error: "Cette shasse a déjà été validée" });
+		}
 
-		const sql = `UPDATE shasse SET statut = 'trouve', dateCapture = CURRENT_TIMESTAMP WHERE idShasse = ? AND IdUtilisateur = ?`;
-		connection.query(sql, [idShasse, userId], async (updateError) => {
+		const sql = `UPDATE shasse SET statut = 'trouve', dateCapture = CURRENT_TIMESTAMP WHERE idShasse = ? AND IdUtilisateur = ? AND statut = 'active'`;
+		connection.query(sql, [idShasse, userId], (updateError, updateResult) => {
 			if (updateError) {
 				console.error("Erreur lors de la validation de la capture :", updateError);
 				return res.status(500).json({ error: "Erreur lors de la validation de la capture" });
 			}
-
-			if (row.webhookUrl) {
-				await sendShinyCaptureWebhook(row.webhookUrl, row.webhookMessage, {
-					pseudo: row.pseudo,
-					pokemon: row.nomPokemon,
-					rencontres: row.rencontres,
-					methode: row.methode,
-					jeu: row.jeu || "",
-					lieu: row.lieu || "",
-				});
+			if (updateResult.affectedRows === 0) {
+				return res.status(409).json({ error: "Cette shasse a déjà été validée" });
 			}
 
-			res.status(200).json({ message: "Capture validée" });
+			const insertSql = `
+				INSERT INTO collectionutilisateur (nombreDeRencontre, methode, IdUtilisateur, jeu, idPokedex, estShiny, dateAjout)
+				VALUES (?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)
+			`;
+			connection.query(
+				insertSql,
+				[row.rencontres, row.methode, userId, row.jeu, row.idPokedex],
+				async (insertError) => {
+					if (insertError) {
+						console.error("Erreur lors de l'ajout de la capture à la collection :", insertError);
+						// La shasse est déjà marquée "trouve" à ce stade — on ne fait pas échouer la
+						// requête pour autant, l'utilisateur pourra toujours l'ajouter manuellement.
+					}
+
+					if (row.webhookUrl) {
+						await sendShinyCaptureWebhook(row.webhookUrl, row.webhookMessage, {
+							pseudo: row.pseudo,
+							pokemon: row.nomPokemon,
+							rencontres: row.rencontres,
+							methode: row.methode,
+							jeu: row.jeu || "",
+							lieu: row.lieu || "",
+						});
+					}
+
+					res.status(200).json({ message: "Capture validée" });
+				}
+			);
 		});
 	});
 };
