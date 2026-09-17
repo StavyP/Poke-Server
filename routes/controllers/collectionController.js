@@ -29,9 +29,13 @@ exports.AjoutCollection = (req, res) => {
 			IdUtilisateur,
 			nomPokemon,
 			estShiny,
+			dateAjout,
 		} = req.body;
+		// COALESCE(?, CURRENT_TIMESTAMP) : si dateAjout n'est pas fourni (Living Dex, ou capture
+		// shiny sans date précisée), la colonne retombe sur sa valeur par défaut au lieu d'un
+		// NULL explicite (qui, lui, n'aurait pas déclenché le DEFAULT de la colonne).
 		const sqlInsert =
-			"INSERT INTO collectionutilisateur (idUtilisateurCollect, surnom, nombreDeRencontre, methode, IdUtilisateur, jeu, idPokedex, estShiny) SELECT ?, ?, ?, ?, ?, ?, p.idPokedex, ? FROM pokedex p WHERE p.nomPokemon = ?";
+			"INSERT INTO collectionutilisateur (idUtilisateurCollect, surnom, nombreDeRencontre, methode, IdUtilisateur, jeu, idPokedex, estShiny, dateAjout) SELECT ?, ?, ?, ?, ?, ?, p.idPokedex, ?, COALESCE(?, CURRENT_TIMESTAMP) FROM pokedex p WHERE p.nomPokemon = ?";
 
 		connection.query(
 			sqlInsert,
@@ -43,6 +47,7 @@ exports.AjoutCollection = (req, res) => {
 				IdUtilisateur,
 				jeu,
 				estShiny ? 1 : 0,
+				dateAjout || null,
 				nomPokemon,
 			],
 			(error, result) => {
