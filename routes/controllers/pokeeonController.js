@@ -22,6 +22,12 @@ function getUserIdFromToken(req) {
 // express.json() refuse déjà les corps de plus de 100 Ko ; le jeu reste bien en dessous.
 const TAILLE_MAX = 100 * 1024;
 
+// La table (et la connexion) sont en utf8 de MySQL, 3 octets au plus : un emoji (4 octets) dans
+// la partie faisait échouer l'UPDATE (« Incorrect string value », mode strict) et la sauvegarde
+// renvoyait 500 tant qu'il restait dans le journal. On écrit ces caractères en échappements JSON
+// (🥉) : JSON.parse redonne exactement la même partie, et MySQL ne voit que de l'ASCII.
+const echapperHorsBmp = (json) => json.replace(/[\ud800-\udfff]/g, (c) => "\\u" + c.charCodeAt(0).toString(16));
+
 exports.ChargerPartie = (req, res) => {
 	const userId = getUserIdFromToken(req);
 	if (!userId) return res.status(401).json({ error: "Non authentifié" });
@@ -56,7 +62,7 @@ exports.EnregistrerPartie = (req, res) => {
 	if (!partie || typeof partie !== "object" || !Number.isInteger(version) || version < 0) {
 		return res.status(400).json({ error: "partie et version requis" });
 	}
-	const etat = JSON.stringify(partie);
+	const etat = echapperHorsBmp(JSON.stringify(partie));
 	if (etat.length > TAILLE_MAX) return res.status(413).json({ error: "Partie trop volumineuse" });
 	const horodatage = Date.now();
 
